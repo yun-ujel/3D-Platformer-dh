@@ -8,6 +8,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpForce = 300f;
     [SerializeField, Range(-5f, 5f)] private float groundDrag = 2f;
     [SerializeField, Range(0f, 10f)] private float airMultiplier;
+    [SerializeField, Range(0f, 10f)] private float upwardMovementMultiplier = 1f;
+    [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 1f;
+    private float defaultGravityScale = 1f;
 
     public Transform orient;
 
@@ -18,10 +21,14 @@ public class PlayerController : MonoBehaviour
     public LayerMask ground;
     bool grounded;
 
+    gravity grav;
+
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        grav = GetComponent<gravity>();
     }
 
     private void Update()
@@ -64,6 +71,26 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(moveDir.normalized * moveSpeed * airMultiplier, ForceMode.Force);
         }
-       
+
+
+        ApplyDynamicGravity();
     }
+
+    void ApplyDynamicGravity()
+    {
+        if(rb.velocity.y > 0)
+        {
+            grav.gravityScale = upwardMovementMultiplier;
+        }
+        else if((rb.velocity.y < 0) && !grounded)
+        {
+            grav.gravityScale = downwardMovementMultiplier;
+        }
+        else
+        {
+            grav.gravityScale = defaultGravityScale;
+        }
+    }
+
+
 }
