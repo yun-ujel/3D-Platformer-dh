@@ -4,27 +4,42 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Keybinds")]
+    [SerializeField]private KeyCode jumpKey = KeyCode.Space;
+    [SerializeField] private KeyCode crouchKey = KeyCode.LeftShift;
+
+
+
+    [Header("Speed Values")]
+
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float jumpForce = 300f;
-    [SerializeField, Range(-5f, 5f)] private float groundDrag = 2f;
+
+    [Header("Air Movement")]
+
     [SerializeField, Range(0f, 10f)] private float airMultiplier;
     [SerializeField, Range(0f, 10f)] private float upwardMovementMultiplier = 1f;
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 1f;
     private float defaultGravityScale = 1f;
+    bool isJumping;
+
+    [SerializeField] private float jumpBufferTime = 0.2f;
+    private float jumpBufferCounter;
+
+    [Header("References")]
 
     public Transform orient;
+
+    public LayerMask groundLayer;
+    bool grounded;
 
     Rigidbody rb;
 
     Vector3 moveDir;
 
-    public LayerMask ground;
-    bool grounded;
-
     gravity grav;
 
 
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -33,19 +48,10 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        grounded = Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, ground);
+        grounded = Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, groundLayer);
 
-        if (grounded)
-            rb.drag = groundDrag;
-        else
-            rb.drag = 0;
-
-        if(Input.GetKey(KeyCode.Space) && grounded)
-        {
-            Jump();
-        }
+        MyInput();
     }
-
 
     void FixedUpdate()
     {
@@ -55,8 +61,9 @@ public class PlayerController : MonoBehaviour
     private void Jump()
     {
         rb.AddForce(transform.up * (jumpForce * 0.01f), ForceMode.Impulse);
+        grav.gravityScale = upwardMovementMultiplier;
 
-
+        isJumping |= true;
         
     }
 
@@ -78,19 +85,60 @@ public class PlayerController : MonoBehaviour
 
     void ApplyDynamicGravity()
     {
-        if(rb.velocity.y > 0)
+        // DYNAMIC GRAVITY
+
+        if ((rb.velocity.y > 0) && !grounded)
         {
-            grav.gravityScale = upwardMovementMultiplier;
+            grav.gravityScale = upwardMovementMultiplier; // Rising Gravity
         }
         else if((rb.velocity.y < 0) && !grounded)
         {
-            grav.gravityScale = downwardMovementMultiplier;
+            grav.gravityScale = downwardMovementMultiplier; // Falling Gravity
         }
         else
         {
-            grav.gravityScale = defaultGravityScale;
+            grav.gravityScale = defaultGravityScale;  // Default Gravity
+        }
+
+
+        // Variable Jump Height
+
+        if (isJumping && rb.velocity.y > 0f && !grounded  && !Input.GetKey(jumpKey)) 
+        {
+            rb.AddForce(Vector3.down * (rb.velocity.y * 0.4f), ForceMode.Impulse); // Cancel out vertical momentum
         }
     }
+
+    private void MyInput()
+    {
+        // JUMPING
+        
+        if (Input.GetKeyDown(jumpKey))
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        if (jumpBufferCounter > 0f && grounded) // "If able to jump"
+        {
+            Jump();
+        }
+
+        if (isJumping && grounded)
+        {
+            isJumping = false;
+        }
+
+        // CROUCHING
+
+
+
+
+    }
+
 
 
 }
