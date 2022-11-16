@@ -103,7 +103,11 @@ public class PlayerController : MonoBehaviour
 
         // Variable Jump Height
 
-        if (isJumping && rb.velocity.y > 0f && !grounded  && !Input.GetKey(jumpKey)) 
+        if (isJumping && grounded)
+        {
+            isJumping = false;
+        }
+        else if (isJumping && rb.velocity.y > 0f && !grounded  && !Input.GetKey(jumpKey)) 
         {
             rb.AddForce(Vector3.down * (rb.velocity.y * 0.4f), ForceMode.Impulse); // Cancel out vertical momentum
         }
@@ -127,10 +131,7 @@ public class PlayerController : MonoBehaviour
             Jump();
         }
 
-        if (isJumping && grounded)
-        {
-            isJumping = false;
-        }
+
 
         // CROUCHING
 
