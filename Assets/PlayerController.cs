@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
 
     public Transform orient;
-
+    public cam cam;
     public LayerMask groundLayer;
     
 
@@ -51,7 +51,8 @@ public class PlayerController : MonoBehaviour
         ground,
         air,
         slam,
-        slamBuffer
+        slamBuffer,
+        dive
     }
 
     
@@ -66,10 +67,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        
-
         MyInput();
         StateHandler();
+
+        if (state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive)
+        {
+            cam.freezeRotation = true;
+        }
+        else
+        {
+            cam.freezeRotation = false;
+        }
     }
 
     void FixedUpdate()
@@ -84,6 +92,7 @@ public class PlayerController : MonoBehaviour
             state = MovementState.ground;
             rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
 
+
             if (isSlam)
             {
                 isSlam = false;
@@ -91,10 +100,12 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-        else if(!isSlam)
+        else if(!(state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive))
         {
             state = MovementState.air;
         }
+        
+
     }
 
 
@@ -110,6 +121,7 @@ public class PlayerController : MonoBehaviour
 
     private void MovePlayer()
     {
+
         moveDir = (orient.forward * Input.GetAxisRaw("Vertical")) + (orient.right * Input.GetAxisRaw("Horizontal"));
         if (state == MovementState.ground)
         {
@@ -131,11 +143,11 @@ public class PlayerController : MonoBehaviour
         {
             grav.gravityScale = slamMovementMultiplier; // Slam Gravity
         }
-        else if ((rb.velocity.y > 0) && state == MovementState.air)
+        else if ((rb.velocity.y > 0) && state != MovementState.ground)
         {
             grav.gravityScale = upwardMovementMultiplier; // Rising Gravity
         }
-        else if((rb.velocity.y < 0) && state == MovementState.air)
+        else if((rb.velocity.y < 0) && state != MovementState.ground)
         {
             grav.gravityScale = downwardMovementMultiplier; // Falling Gravity
         }
@@ -205,14 +217,19 @@ public class PlayerController : MonoBehaviour
                 state = MovementState.slamBuffer;
                 isSlam = true;
 
+                
+
                 Invoke(nameof(Slam), slamBufferTime);
 
             }
 
         }
 
-
-
+        // DIVING
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Dive();
+        }
 
 
 
@@ -227,6 +244,13 @@ public class PlayerController : MonoBehaviour
 
 
         state = MovementState.slam; 
+
+    }
+
+    void Dive()
+    {
+        state = MovementState.dive;
+        rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
     }
 
 }

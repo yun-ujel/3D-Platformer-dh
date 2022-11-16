@@ -1718,8 +1718,9 @@ MonoBehaviour:
   downwardMovementMultiplier: 4
   slamMovementMultiplier: 10
   jumpBufferTime: 0.2
-  slamBufferTime: 0.1
+  slamBufferTime: 0.2
   orient: {fileID: 1684717767}
+  cam: {fileID: 963194231}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -1926,10 +1927,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 963194228}
+  - component: {fileID: 963194231}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
-  - component: {fileID: 963194231}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1995,7 +1996,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.11559233, y: 0.00000003418209, z: -0.000000003977852, w: 0.9932968}
+  m_LocalRotation: {x: 0.11559233, y: -0.000000034182086, z: 0.0000000039778514, w: 0.9932968}
   m_LocalPosition: {x: 0, y: 3, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -2053,6 +2054,7 @@ MonoBehaviour:
   Player_obj: {fileID: 1656096331}
   rbody: {fileID: 761585228}
   rotationspeed: 10
+  freezeRotation: 0
 --- !u!1 &1390205997
 GameObject:
   m_ObjectHideFlags: 0
@@ -2731,7 +2733,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1536284789}
-  m_LocalRotation: {x: 0.11559233, y: 0.000000017091047, z: -0.0000000019889261, w: 0.99329674}
+  m_LocalRotation: {x: 0.11559233, y: -0.00000001709104, z: 0.0000000019889252, w: 0.99329674}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:

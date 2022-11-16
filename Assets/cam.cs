@@ -7,10 +7,13 @@ public class cam : MonoBehaviour
     [Header("references")]
     public Transform orient;
     public Transform Player;
-    public Transform Player_obj;
+    public Transform PlayerPhysical;
     public Rigidbody rbody;
 
     public float rotationspeed;
+
+    public bool freezeRotation;
+    public Vector3 inputDir;
 
     private void Start()
     {
@@ -21,17 +24,24 @@ public class cam : MonoBehaviour
     private void Update()
     {
         //rotate orientation
-        Vector3 veiwDir = Player.position - new Vector3(transform.position.x, Player.position.y, transform.position.z);
-        orient.forward = veiwDir.normalized;
+        Vector3 viewDir = Player.position - new Vector3(transform.position.x, Player.position.y, transform.position.z);
+        orient.forward = viewDir.normalized;
 
-        //rotate player
+        if (!freezeRotation)
+        {
+            RotatePlayer();
+        }
+    }
+
+    void RotatePlayer()
+    {
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
         Vector3 inputDir = orient.forward * verticalInput + orient.right * horizontalInput;
 
-        if(inputDir!= Vector3.zero)
+        if (inputDir != Vector3.zero)
         {
-            Player_obj.forward = Vector3.Slerp(Player_obj.forward, inputDir.normalized, Time.deltaTime * rotationspeed);
+            PlayerPhysical.forward = Vector3.Slerp(PlayerPhysical.forward, inputDir.normalized, Time.deltaTime * rotationspeed);
         }
     }
 }
