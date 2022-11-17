@@ -23,13 +23,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 4f;
     [SerializeField, Range(0f, 20f)] private float slamMovementMultiplier = 4f;
     private float defaultGravityScale = 1f;
-    bool isJumping;
+    bool isRising;
 
     [SerializeField] private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
 
+
     [Header("Slam")]
     [SerializeField, Range(0f, 1f)] private float slamBufferTime;
+    private float slamBufferCounter;
     bool isSlam;
 
 
@@ -54,10 +56,6 @@ public class PlayerController : MonoBehaviour
         slamBuffer,
         dive
     }
-
-    
-
-
 
     void Start()
     {
@@ -89,14 +87,23 @@ public class PlayerController : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, groundLayer))
         {
-            state = MovementState.ground;
-            rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+            if (state == MovementState.air && !isRising)
+            {
+                state = MovementState.ground;
+
+                Debug.Log("Landed");
+            }
+
+
+
+
 
 
             if (isSlam)
             {
                 isSlam = false;
                 transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+                state = MovementState.ground;
             }
 
         }
@@ -105,18 +112,101 @@ public class PlayerController : MonoBehaviour
             state = MovementState.air;
         }
         
-
+        if(state == MovementState.air || state == MovementState.ground)
+        {
+            rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+        }
     }
 
-
-
-    private void Jump()
+    private void MyInput()
     {
-        rb.AddForce(transform.up * (jumpForce * 0.01f), ForceMode.Impulse);
-        grav.gravityScale = upwardMovementMultiplier;
+        // JUMPING
 
-        isJumping |= true;
+        if (Input.GetKeyDown(jumpKey))
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        if (jumpBufferCounter > 0f && state == MovementState.ground) // "If able to jump"
+        {
+            Jump();
+        }
+
+        // Variable Jump Height
+
+        if (isRising && rb.velocity.y > 0f && state == MovementState.air && !Input.GetKey(jumpKey))
+        {
+            rb.AddForce(Vector3.down * (rb.velocity.y * 0.8f), ForceMode.Impulse); // Cancel out vertical momentum
+            Debug.Log("Jump Cancelled");
+            isRising = false;
+
+        }
+        else if (rb.velocity.y < 0f && isRising)
+        {
+            isRising = false;
+        }
+
         
+
+
+
+        // CROUCHING
+        if (state == MovementState.ground) 
+        { 
+
+            if (Input.GetKeyDown(crouchKey))
+            {
+                transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
+                rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
+
+                currentMoveSpeed = crouchSpeed;
+            }
+            if (Input.GetKeyUp(crouchKey))
+            {
+                transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+
+                currentMoveSpeed = walkSpeed;
+            }
+
+        }
+        else // if midair
+        {
+            if (Input.GetKeyDown(crouchKey))
+            {
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+
+                state = MovementState.slamBuffer;
+                isSlam = true;
+
+
+
+                //Invoke(nameof(Slam), slamBufferTime);
+                slamBufferCounter = slamBufferTime;
+            }
+            else if (state == MovementState.slamBuffer)
+            {
+                slamBufferCounter -= Time.deltaTime;
+            }
+
+            if (slamBufferCounter < 0f && state == MovementState.slamBuffer)
+            {
+                Slam();
+            }
+
+        }
+
+        // DIVING
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Dive();
+        }
+
+
+
     }
 
     private void MovePlayer()
@@ -147,88 +237,13 @@ public class PlayerController : MonoBehaviour
         {
             grav.gravityScale = upwardMovementMultiplier; // Rising Gravity
         }
-        else if((rb.velocity.y < 0) && state != MovementState.ground)
+        else if ((rb.velocity.y < 0) && state != MovementState.ground)
         {
             grav.gravityScale = downwardMovementMultiplier; // Falling Gravity
         }
         else
         {
             grav.gravityScale = defaultGravityScale;  // Default Gravity
-        }
-
-
-        // Variable Jump Height
-
-        if (isJumping && state == MovementState.ground)
-        {
-            isJumping = false;
-        }
-        else if (isJumping && rb.velocity.y > 0f && state == MovementState.air && !Input.GetKey(jumpKey)) 
-        {
-            rb.AddForce(Vector3.down * (rb.velocity.y * 0.4f), ForceMode.Impulse); // Cancel out vertical momentum
-        }
-    }
-
-    private void MyInput()
-    {
-        // JUMPING
-
-        if (Input.GetKeyDown(jumpKey))
-        {
-            jumpBufferCounter = jumpBufferTime;
-        }
-        else
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
-
-        if (jumpBufferCounter > 0f && state == MovementState.ground) // "If able to jump"
-        {
-            Jump();
-        }
-
-
-
-        // CROUCHING
-        if (state == MovementState.ground) 
-        { 
-
-            if (Input.GetKeyDown(crouchKey))
-            {
-                transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
-                rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
-
-                currentMoveSpeed = crouchSpeed;
-            }
-            if (Input.GetKeyUp(crouchKey))
-            {
-                transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
-
-                currentMoveSpeed = walkSpeed;
-            }
-
-        }
-        else
-        {
-            if (Input.GetKeyDown(crouchKey))
-            {
-                rb.constraints = RigidbodyConstraints.FreezeAll;
-
-                state = MovementState.slamBuffer;
-                isSlam = true;
-
-                
-
-                Invoke(nameof(Slam), slamBufferTime);
-
-            }
-
-        }
-
-        // DIVING
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            Dive();
         }
 
 
@@ -242,6 +257,7 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
         transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
 
+        slamBufferCounter = slamBufferTime;
 
         state = MovementState.slam; 
 
@@ -250,7 +266,29 @@ public class PlayerController : MonoBehaviour
     void Dive()
     {
         state = MovementState.dive;
-        rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
+        //rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
+
+        if(cam.inputDir != Vector3.zero)
+        {
+            rb.AddForce(cam.orient.forward * 16f, ForceMode.Impulse);
+        }
+        else
+        {
+            rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
+        }
     }
 
+    private void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        rb.AddForce(transform.up * (jumpForce), ForceMode.Impulse);
+        grav.gravityScale = upwardMovementMultiplier;
+
+        jumpBufferCounter = 0f;
+
+        isRising = true;
+
+        Debug.Log("Jump Triggered");
+    }
 }
