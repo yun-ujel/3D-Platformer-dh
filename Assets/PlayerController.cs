@@ -73,15 +73,6 @@ public class PlayerController : MonoBehaviour
     {
         MyInput();
         StateHandler();
-
-        if (state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive)
-        {
-            cam.freezeRotation = true;
-        }
-        else
-        {
-            cam.freezeRotation = false;
-        }
     }
 
     void FixedUpdate()
@@ -120,13 +111,26 @@ public class PlayerController : MonoBehaviour
         {
             state = MovementState.air;
         }
-        
+        // Freeze Rotation, Unfreeze position
         if(state == MovementState.air || state == MovementState.ground)
         {
             rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
         }
 
 
+        
+        if (!(state == MovementState.air || state == MovementState.ground || state == MovementState.rolling))
+        {
+            cam.rotationMode = cam.rMode.frozen;
+        }
+        else if (state == MovementState.rolling)
+        {
+            cam.rotationMode = cam.rMode.roll;
+        }
+        else
+        {
+            cam.rotationMode = cam.rMode.plain;
+        }
     }
 
     private void MyInput()
@@ -243,6 +247,10 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(moveDir.normalized * currentMoveSpeed * airMultiplier, ForceMode.Force);
         }
+        else if (state == MovementState.rolling)
+        {
+            rb.AddForce(Vector3.Normalize(orient.forward * Input.GetAxisRaw("Vertical")) * currentMoveSpeed, ForceMode.Force);
+        }
 
 
         ApplyDynamicGravity();
@@ -272,6 +280,8 @@ public class PlayerController : MonoBehaviour
 
     }
 
+
+    // Action Methods
     void Slam()
     {
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
@@ -314,14 +324,18 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Jump Triggered");
     }
 
+
+    // Roll Methods
     void StartRoll()
     {
         phys.ColliderSphere();
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotationZ;
+        
     }
     void EndRoll()
     {
         phys.ColliderCapsule();
         transform.rotation = Quaternion.identity;
+        
     }
 }
