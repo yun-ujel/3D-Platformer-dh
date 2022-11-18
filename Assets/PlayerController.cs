@@ -40,7 +40,10 @@ public class PlayerController : MonoBehaviour
     public Transform orient;
     public cam cam;
     public LayerMask groundLayer;
-    
+
+
+    public physCollision phys;
+
 
     Rigidbody rb;
     gravity grav;
@@ -54,8 +57,11 @@ public class PlayerController : MonoBehaviour
         air,
         slam,
         slamBuffer,
-        dive
+        dive,
+        rolling
     }
+
+
 
     void Start()
     {
@@ -85,32 +91,32 @@ public class PlayerController : MonoBehaviour
 
     private void StateHandler()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, groundLayer))
+        if (Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, groundLayer) && (!Input.GetKey(KeyCode.C)))
         {
-            if (state == MovementState.air && !isRising)
+
+            if (isSlam)
+            {
+                isSlam = false;
+                //transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+                state = MovementState.ground;
+            }
+            else if (state == MovementState.air && !isRising)
             {
                 state = MovementState.ground;
 
                 Debug.Log("Landed");
             }
-
-            if (state == MovementState.dive)
+            else if (state != MovementState.ground)
             {
                 state = MovementState.ground;
             }
 
 
 
-
-            if (isSlam)
-            {
-                isSlam = false;
-                transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
-                state = MovementState.ground;
-            }
+            
 
         }
-        else if(!(state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive))
+        else if(!(state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive || state  == MovementState.rolling))
         {
             state = MovementState.air;
         }
@@ -119,6 +125,8 @@ public class PlayerController : MonoBehaviour
         {
             rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
         }
+
+
     }
 
     private void MyInput()
@@ -163,14 +171,14 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(crouchKey))
             {
-                transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
+                //transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
                 rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
 
                 currentMoveSpeed = crouchSpeed;
             }
             if (Input.GetKeyUp(crouchKey))
             {
-                transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+                //transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
 
                 currentMoveSpeed = walkSpeed;
             }
@@ -206,6 +214,17 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E) && state == MovementState.air)
         {
             Dive();
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            state = MovementState.rolling;
+
+            StartRoll();
+        }
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            EndRoll();
         }
 
 
@@ -258,7 +277,7 @@ public class PlayerController : MonoBehaviour
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
 
         rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
-        transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
+        //transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
 
         slamBufferCounter = slamBufferTime;
 
@@ -293,5 +312,16 @@ public class PlayerController : MonoBehaviour
         isRising = true;
 
         Debug.Log("Jump Triggered");
+    }
+
+    void StartRoll()
+    {
+        phys.ColliderSphere();
+        rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotationZ;
+    }
+    void EndRoll()
+    {
+        phys.ColliderCapsule();
+        transform.rotation = Quaternion.identity;
     }
 }
