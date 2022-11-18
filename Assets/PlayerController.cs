@@ -94,7 +94,10 @@ public class PlayerController : MonoBehaviour
                 Debug.Log("Landed");
             }
 
-
+            if (state == MovementState.dive)
+            {
+                state = MovementState.ground;
+            }
 
 
 
@@ -200,7 +203,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // DIVING
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && state == MovementState.air)
         {
             Dive();
         }
