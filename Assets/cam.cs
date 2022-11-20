@@ -9,6 +9,9 @@ public class cam : MonoBehaviour
     public Transform Player;
     public Transform PlayerPhysical;
     public Rigidbody rbody;
+    public Transform PlayerPhysical_Z;
+
+    public PlayerController pc;
 
     public float rotationSpeed;
     public float rollRotationSpeed;
@@ -16,7 +19,9 @@ public class cam : MonoBehaviour
     public bool freezeRotation;
     public Vector3 inputDir;
 
-    public float viewAngle;
+    //public float viewAngle;
+
+    //public float rotationDiff;
 
     public rMode rotationMode;
     public enum rMode
@@ -44,7 +49,9 @@ public class cam : MonoBehaviour
             RotatePlayer();
         }
 
-        Debug.DrawRay(PlayerPhysical.position, PlayerPhysical.forward, Color.red, 10f);
+        
+
+        //rotationDiff = PlayerPhysical.rotation.y - orient.rotation.y;
     }
 
     void RotatePlayer()
@@ -59,12 +66,13 @@ public class cam : MonoBehaviour
         }
         else if (rotationMode == rMode.roll)
         {
-
-            viewAngle = Vector3.Angle(orient.forward, PlayerPhysical.forward);
-
-
-            
-            //rbody.MoveRotation(rbody.rotation * Quaternion.Euler(new Vector3(0f, viewAngle, 0f) * Time.fixedDeltaTime));
+            PlayerPhysical.forward = Vector3.Slerp(PlayerPhysical.forward, inputDir.normalized, Time.deltaTime * rotationSpeed);
+            PlayerPhysical_Z.Rotate(Vector3.right, rbody.velocity.magnitude * Time.deltaTime * rollRotationSpeed);
         }
+        if (rotationMode != rMode.roll && PlayerPhysical_Z.rotation.z != 0)
+        {
+            PlayerPhysical_Z.Rotate(Vector3.right, Vector3.Angle(PlayerPhysical_Z.up, PlayerPhysical.up));
+        }
+        
     }
 }

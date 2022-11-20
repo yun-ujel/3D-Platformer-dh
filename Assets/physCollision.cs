@@ -11,26 +11,24 @@ public class physCollision : MonoBehaviour
     [SerializeField] Mesh sphereMesh;
     [SerializeField] Mesh capsuleMesh;
 
-    void Start()
-    {
-        
-    }
-
     public void ColliderSphere()
     {
         capsule.enabled = false;
         sphere.enabled = true;
-
-        mf.mesh = sphereMesh;
-
     }
 
     public void ColliderCapsule()
     {
         capsule.enabled = true;
         sphere.enabled = false;
+    }
 
+    public void meshSphere()
+    {
+        mf.mesh = sphereMesh;
+    }
+    public void meshCapsule()
+    {
         mf.mesh = capsuleMesh;
-
     }
 }

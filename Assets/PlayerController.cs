@@ -5,19 +5,22 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Keybinds")]
-    [SerializeField]private KeyCode jumpKey = KeyCode.Space;
-    [SerializeField] private KeyCode crouchKey = KeyCode.LeftShift;
-
+    public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode crouchKey = KeyCode.LeftShift;
+    public KeyCode diveKey = KeyCode.E;
 
     [Header("Speed Values")]
 
     [SerializeField] private float walkSpeed;
     [SerializeField] private float crouchSpeed;
+    [SerializeField] private float rollSpeed;
+
     private float currentMoveSpeed = 30f;
     [SerializeField] private float jumpForce = 300f;
+    Vector3 moveDir;
 
     [Header("Air Movement")]
-
+    public bool onGround;
     [SerializeField, Range(0f, 10f)] private float airMultiplier;
     [SerializeField, Range(0f, 10f)] private float upwardMovementMultiplier = 1f;
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 4f;
@@ -28,39 +31,48 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
 
+    public float diveForce = 16f;
 
-    [Header("Slam")]
+    [Header("Crouch")]
+
     [SerializeField, Range(0f, 1f)] private float slamBufferTime;
     private float slamBufferCounter;
-    bool isSlam;
 
+    [SerializeField, Range(0f, 1f)] private float hardLandingTime;
+    private float hardLandingCounter;
+
+    [SerializeField, Range(0f, 1f)] private float rollHopCooldown;
+    public float rollHopForce = 4f;
+
+    public bool inCrouch;
+    public bool inRoll;
+
+    bool isSlam;
 
     [Header("References")]
 
     public Transform orient;
     public cam cam;
-    public LayerMask groundLayer;
-
-
     public physCollision phys;
-
-
+    public LayerMask groundLayer;
     Rigidbody rb;
     gravity grav;
-
-    Vector3 moveDir;
-
     public MovementState state;
+
+    public float currentVelocity;
     public enum MovementState
     {
-        ground,
-        air,
         slam,
         slamBuffer,
         dive,
-        rolling
+
+        none,
+
+        crouch,
+        roll
     }
 
+    float timeSinceLastAction;
 
 
     void Start()
@@ -68,62 +80,71 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         grav = GetComponent<gravity>();
     }
-
     private void Update()
     {
         MyInput();
         StateHandler();
-    }
 
+        currentVelocity = rb.velocity.magnitude;
+
+        timeSinceLastAction -= Time.deltaTime;
+    }
     void FixedUpdate()
     {
         MovePlayer();
     }
-
     private void StateHandler()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, 1f + 0.2f, groundLayer) && (!Input.GetKey(KeyCode.C)))
+        // Ground Check & Landing
+        if (Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), new Vector3(0.3f, 0.7f, 0.3f), Quaternion.identity, groundLayer))
         {
-
             if (isSlam)
             {
                 isSlam = false;
-                //transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
-                state = MovementState.ground;
+                
+                SlamLanding();
             }
-            else if (state == MovementState.air && !isRising)
+            else if (!onGround && !isRising)
             {
-                state = MovementState.ground;
-
                 Debug.Log("Landed");
             }
-            else if (state != MovementState.ground)
+
+            if (!(state == MovementState.crouch || state == MovementState.roll))
             {
-                state = MovementState.ground;
+                state = MovementState.none;
             }
 
-
-
-            
+            onGround = true;
 
         }
-        else if(!(state == MovementState.slam || state == MovementState.slamBuffer || state == MovementState.dive || state  == MovementState.rolling))
+        else
         {
-            state = MovementState.air;
+            onGround = false;
         }
-        // Freeze Rotation, Unfreeze position
-        if(state == MovementState.air || state == MovementState.ground)
+
+        // Air movement after Dive
+        if(timeSinceLastAction < -0.5f && state == MovementState.dive)
         {
+            Debug.Log("Exit Dive");
+
+            state = MovementState.none;
+        }
+
+        // Hard Landing
+        hardLandingCounter -= Time.deltaTime;
+
+
+        // Rotation Management
+        if(state == MovementState.none)
+        {
+            // Freeze Rotation, Unfreeze position
             rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
         }
-
-
-        
-        if (!(state == MovementState.air || state == MovementState.ground || state == MovementState.rolling))
+        if (!(state == MovementState.none || state == MovementState.roll || state == MovementState.crouch))
         {
             cam.rotationMode = cam.rMode.frozen;
         }
-        else if (state == MovementState.rolling)
+        else if (state == MovementState.roll)
         {
             cam.rotationMode = cam.rMode.roll;
         }
@@ -131,12 +152,14 @@ public class PlayerController : MonoBehaviour
         {
             cam.rotationMode = cam.rMode.plain;
         }
-    }
 
+
+
+
+    }
     private void MyInput()
     {
         // JUMPING
-
         if (Input.GetKeyDown(jumpKey))
         {
             jumpBufferCounter = jumpBufferTime;
@@ -145,15 +168,13 @@ public class PlayerController : MonoBehaviour
         {
             jumpBufferCounter -= Time.deltaTime;
         }
-
-        if (jumpBufferCounter > 0f && state == MovementState.ground) // "If able to jump"
+        if (jumpBufferCounter > 0f && onGround && state == MovementState.none) // "If able to jump"
         {
             Jump();
         }
 
         // Variable Jump Height
-
-        if (isRising && rb.velocity.y > 0f && state == MovementState.air && !Input.GetKey(jumpKey))
+        if (isRising && rb.velocity.y > 0f && state == MovementState.none && !onGround && !Input.GetKey(jumpKey))
         {
             rb.AddForce(Vector3.down * (rb.velocity.y * 0.8f), ForceMode.Impulse); // Cancel out vertical momentum
             Debug.Log("Jump Cancelled");
@@ -165,30 +186,39 @@ public class PlayerController : MonoBehaviour
             isRising = false;
         }
 
-        
+        // DIVING
+        if (Input.GetKeyDown(diveKey) && !onGround && state == MovementState.none)
+        {
+            Dive();
+        }
 
 
 
         // CROUCHING
-        if (state == MovementState.ground) 
+        if (onGround) 
         { 
-
-            if (Input.GetKeyDown(crouchKey))
+            // ENTER CROUCH
+            if (Input.GetKeyDown(crouchKey) && state != MovementState.roll)
             {
-                //transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
-                rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
-
-                currentMoveSpeed = crouchSpeed;
-            }
-            if (Input.GetKeyUp(crouchKey))
-            {
-                //transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
-
-                currentMoveSpeed = walkSpeed;
+                EnterCrouch();
+                Debug.Log("Enter Crouch");
             }
 
+            // ENTER ROLL
+            if (Input.GetKeyDown(diveKey))
+            {
+                if (state == MovementState.crouch)
+                {
+                    StartRoll();
+                }
+                else if (state == MovementState.roll && timeSinceLastAction < -rollHopCooldown)
+                {
+                    RollHop();
+                }
+            }
         }
-        else // if midair
+        // SLAM
+        else if (state != MovementState.dive || state != MovementState.slam)
         {
             if (Input.GetKeyDown(crouchKey))
             {
@@ -211,51 +241,58 @@ public class PlayerController : MonoBehaviour
             {
                 Slam();
             }
-
         }
-
-        // DIVING
-        if (Input.GetKeyDown(KeyCode.E) && state == MovementState.air)
+        // EXIT CROUCH
+        if (state == MovementState.roll || state == MovementState.crouch)
         {
-            Dive();
+            if (Input.GetKeyUp(crouchKey) || Input.GetKeyDown(jumpKey))
+            {
+                ExitCrouch();
+                Debug.Log("Exit Crouch");
+            }
+            else if (hardLandingCounter < 0f && !Input.GetKey(crouchKey) && state == MovementState.crouch)
+            {
+                ExitCrouch();
+                Debug.Log("Exit Crouch");
+            }
         }
-
-        if (Input.GetKeyDown(KeyCode.C))
+        // EXIT ROLL
+        if (timeSinceLastAction < -0.3f && rb.velocity.magnitude < 2f && state == MovementState.roll && cam.inputDir == Vector3.zero)
         {
-            state = MovementState.rolling;
+            Debug.Log("Exit Roll");
 
-            StartRoll();
-        }
-        if (Input.GetKeyUp(KeyCode.C))
-        {
             EndRoll();
+            EnterCrouch();
         }
+
+
+        ///|| (hardLandingCounter < 0f && !Input.GetKey(crouchKey))
 
 
 
     }
-
     private void MovePlayer()
     {
 
         moveDir = (orient.forward * Input.GetAxisRaw("Vertical")) + (orient.right * Input.GetAxisRaw("Horizontal"));
-        if (state == MovementState.ground)
+
+
+        if ((state == MovementState.none || state == MovementState.crouch) && onGround)
         {
             rb.AddForce(moveDir.normalized * currentMoveSpeed, ForceMode.Force);
         }
-        else if (state == MovementState.air)
+        else if (state == MovementState.none && !onGround)
         {
             rb.AddForce(moveDir.normalized * currentMoveSpeed * airMultiplier, ForceMode.Force);
         }
-        else if (state == MovementState.rolling)
+        else if (state == MovementState.roll)
         {
-            rb.AddForce(Vector3.Normalize(orient.forward * Input.GetAxisRaw("Vertical")) * currentMoveSpeed, ForceMode.Force);
+            rb.AddForce(moveDir.normalized * currentMoveSpeed, ForceMode.Impulse);
         }
 
 
         ApplyDynamicGravity();
     }
-
     void ApplyDynamicGravity()
     {
         // DYNAMIC GRAVITY
@@ -263,11 +300,11 @@ public class PlayerController : MonoBehaviour
         {
             grav.gravityScale = slamMovementMultiplier; // Slam Gravity
         }
-        else if ((rb.velocity.y > 0) && state != MovementState.ground)
+        else if ((rb.velocity.y > 0) && !onGround)
         {
             grav.gravityScale = upwardMovementMultiplier; // Rising Gravity
         }
-        else if ((rb.velocity.y < 0) && state != MovementState.ground)
+        else if ((rb.velocity.y < 0) && !onGround)
         {
             grav.gravityScale = downwardMovementMultiplier; // Falling Gravity
         }
@@ -281,9 +318,17 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    // Action Methods
+
+
+
+
+    // --- ACTION METHODS --- 
+
+    // Air States
     void Slam()
     {
+        timeSinceLastAction = 0f;
+
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
 
         rb.AddForce(Vector3.down * 7f, ForceMode.Impulse);
@@ -291,27 +336,37 @@ public class PlayerController : MonoBehaviour
 
         slamBufferCounter = slamBufferTime;
 
-        state = MovementState.slam; 
+        state = MovementState.slam;
+    }
+    void SlamLanding()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        hardLandingCounter = hardLandingTime;
+        rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
 
+        EnterCrouch();
     }
 
     void Dive()
     {
-        state = MovementState.dive;
-        //rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
+        timeSinceLastAction = 0f;
 
-        if(cam.inputDir != Vector3.zero)
+        state = MovementState.dive;
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        if (cam.inputDir != Vector3.zero)
         {
-            rb.AddForce(cam.orient.forward * 16f, ForceMode.Impulse);
+            rb.AddForce(cam.orient.forward * diveForce, ForceMode.Impulse);
         }
         else
         {
-            rb.AddForce(cam.PlayerPhysical.forward.normalized * 16f, ForceMode.Impulse);
+            rb.AddForce(cam.PlayerPhysical.forward.normalized * diveForce, ForceMode.Impulse);
         }
     }
-
-    private void Jump()
+    void Jump()
     {
+        timeSinceLastAction = 0f;
+
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         rb.AddForce(transform.up * (jumpForce), ForceMode.Impulse);
@@ -325,17 +380,56 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    // Roll Methods
+    // Ground States
     void StartRoll()
     {
-        phys.ColliderSphere();
-        rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotationZ;
-        
+        state = MovementState.roll;
+
+        phys.meshSphere();
+
+        transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+        currentMoveSpeed = rollSpeed * 0.05f;
+
+        RollHop();
     }
     void EndRoll()
     {
+        phys.meshCapsule();
+    }
+    void RollHop()
+    {
+        timeSinceLastAction = 0f;
+
+        rb.AddForce(cam.PlayerPhysical.forward.normalized * rollHopForce, ForceMode.Impulse);
+
+        rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
+    }
+
+    void EnterCrouch()
+    {
+        transform.localScale = new Vector3(transform.localScale.x, 0.5f, transform.localScale.z);
+        rb.AddForce(Vector3.down * 10f, ForceMode.Impulse);
+        currentMoveSpeed = crouchSpeed;
+
+        phys.ColliderSphere();
+
+        state = MovementState.crouch;
+    }
+    void ExitCrouch()
+    {
+        transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
+        currentMoveSpeed = walkSpeed;
+
         phys.ColliderCapsule();
-        transform.rotation = Quaternion.identity;
-        
+
+        if (state == MovementState.roll)
+        {
+            EndRoll();
+            state = MovementState.none;
+        }
+        else if (state == MovementState.crouch)
+        {
+            state = MovementState.none;
+        }
     }
 }
