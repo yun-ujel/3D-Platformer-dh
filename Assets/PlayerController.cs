@@ -16,11 +16,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float rollSpeed;
 
     private float currentMoveSpeed = 30f;
-    [SerializeField] private float jumpForce = 300f;
+    [SerializeField] private float jumpForce = 16f;
+    [SerializeField] private float slamJumpForce = 16f;
+
     Vector3 moveDir;
 
     [Header("Air Movement")]
-    public bool onGround;
     [SerializeField, Range(0f, 10f)] private float airMultiplier;
     [SerializeField, Range(0f, 10f)] private float upwardMovementMultiplier = 1f;
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 4f;
@@ -44,8 +45,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float rollHopCooldown;
     public float rollHopForce = 4f;
 
-    public bool inCrouch;
-    public bool inRoll;
+
 
     bool isSlam;
 
@@ -57,6 +57,9 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     Rigidbody rb;
     gravity grav;
+
+    [Header("Read Only")]
+
     public MovementState state;
 
     public float currentVelocity;
@@ -72,7 +75,13 @@ public class PlayerController : MonoBehaviour
         roll
     }
 
+    public bool onGround;
+
+    public bool inCrouch;
+    public bool inRoll;
+
     float timeSinceLastAction;
+
 
 
     void Start()
@@ -102,7 +111,7 @@ public class PlayerController : MonoBehaviour
             {
                 isSlam = false;
                 
-                SlamLanding();
+                HardLanding();
             }
             else if (!onGround && !isRising)
             {
@@ -168,7 +177,7 @@ public class PlayerController : MonoBehaviour
         {
             jumpBufferCounter -= Time.deltaTime;
         }
-        if (jumpBufferCounter > 0f && onGround && state == MovementState.none) // "If able to jump"
+        if (jumpBufferCounter > 0f && onGround) // "If able to jump"
         {
             Jump();
         }
@@ -245,7 +254,7 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if (Input.GetKeyUp(crouchKey) || Input.GetKeyDown(jumpKey))
+            if (Input.GetKeyUp(crouchKey))
             {
                 ExitCrouch();
                 Debug.Log("Exit Crouch");
@@ -266,7 +275,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        ///|| (hardLandingCounter < 0f && !Input.GetKey(crouchKey))
+        
 
 
 
@@ -338,7 +347,7 @@ public class PlayerController : MonoBehaviour
 
         state = MovementState.slam;
     }
-    void SlamLanding()
+    void HardLanding()
     {
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         hardLandingCounter = hardLandingTime;
@@ -365,11 +374,30 @@ public class PlayerController : MonoBehaviour
     }
     void Jump()
     {
+        ExitCrouch();
+
         timeSinceLastAction = 0f;
 
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         rb.AddForce(transform.up * (jumpForce), ForceMode.Impulse);
+        grav.gravityScale = upwardMovementMultiplier;
+
+        jumpBufferCounter = 0f;
+
+        isRising = true;
+
+        Debug.Log("Jump Triggered");
+    }
+    void slamJump()
+    {
+        ExitCrouch();
+
+        timeSinceLastAction = 0f;
+
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        rb.AddForce(transform.up * (slamJumpForce), ForceMode.Impulse);
         grav.gravityScale = upwardMovementMultiplier;
 
         jumpBufferCounter = 0f;
