@@ -179,7 +179,14 @@ public class PlayerController : MonoBehaviour
         }
         if (jumpBufferCounter > 0f && onGround) // "If able to jump"
         {
-            Jump();
+            if (hardLandingCounter > 0f)
+            {
+                slamJump();
+            }
+            else if (state != MovementState.slam && hardLandingCounter < 0f)
+            {
+                Jump();
+            }
         }
 
         // Variable Jump Height
@@ -214,16 +221,13 @@ public class PlayerController : MonoBehaviour
             }
 
             // ENTER ROLL
-            if (Input.GetKeyDown(diveKey))
+            if (state == MovementState.roll && timeSinceLastAction < -rollHopCooldown && Input.GetKeyDown(diveKey))
             {
-                if (state == MovementState.crouch)
-                {
-                    StartRoll();
-                }
-                else if (state == MovementState.roll && timeSinceLastAction < -rollHopCooldown)
-                {
-                    RollHop();
-                }
+                RollHop();
+            }
+            else if (state == MovementState.crouch && Input.GetKey(diveKey))
+            {
+                StartRoll();
             }
         }
         // SLAM
@@ -259,7 +263,7 @@ public class PlayerController : MonoBehaviour
                 ExitCrouch();
                 Debug.Log("Exit Crouch");
             }
-            else if (hardLandingCounter < 0f && !Input.GetKey(crouchKey) && state == MovementState.crouch)
+            else if (hardLandingCounter < 0f && !Input.GetKey(crouchKey) && (state == MovementState.crouch || state == MovementState.roll))
             {
                 ExitCrouch();
                 Debug.Log("Exit Crouch");
@@ -349,6 +353,8 @@ public class PlayerController : MonoBehaviour
     }
     void HardLanding()
     {
+        Debug.Log("Triggered Hard Landing");
+
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         hardLandingCounter = hardLandingTime;
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
