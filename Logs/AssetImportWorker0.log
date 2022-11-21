@@ -224,3 +224,4 @@ Received Import Request.
 Start importing Assets/001.fbx using Guid(d5d36120f5510df409390649dbe7cf00) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'eea50960f828a3db3b380033eb418411') in 0.152109 seconds 
   Import took 0.155300 seconds .
 
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
