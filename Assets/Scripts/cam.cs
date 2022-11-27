@@ -4,18 +4,19 @@ using UnityEngine;
 
 public class cam : MonoBehaviour
 {
-    [Header("references")]
+    [Header("References")]
     public Transform orient;
     public Transform Player;
     public Transform PlayerPhysical;
     public Rigidbody rbody;
     public Transform PlayerPhysical_Z;
-
     public PlayerController pc;
 
+    [Header("Speed Values")]
     public float rotationSpeed;
     public float rollRotationSpeed;
 
+    [Header("Read Only")]
     public bool freezeRotation;
     public Vector3 inputDir;
 
