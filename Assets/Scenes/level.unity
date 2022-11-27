@@ -174,7 +174,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 3498bc4df97334545a29f81521c1c8f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -314,6 +314,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
+    - target: {fileID: 2966882351393290550, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 3498bc4df97334545a29f81521c1c8f2, type: 2}
     - target: {fileID: 2966882351461927607, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
@@ -328,11 +332,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2966882351461927607, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000017329
+      value: -0.000000017328997
       objectReference: {fileID: 0}
     - target: {fileID: 2966882351461927607, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 6.254678e-10
+      value: 6.254676e-10
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352011663284, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -344,15 +348,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352011663284, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.05924111
+      value: 0.059241112
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352011663284, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 7.799585e-19
+      value: 0.000000003718748
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352011663284, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -1.4472369e-18
+      value: -2.2069037e-10
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352041767332, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_Orbits.Array.data[0].m_Height
@@ -424,7 +428,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352531186359, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.05924111
+      value: 0.059241116
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352531186359, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.y
@@ -432,7 +436,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352531186359, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -2.2069035e-10
+      value: -2.2069037e-10
       objectReference: {fileID: 0}
     - target: {fileID: 2966882352865923470, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
       propertyPath: rollSpeed
@@ -1267,6 +1271,44 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 346a1a8cbe225b04798540b5fe479a87, type: 3}
+--- !u!1 &2066484671 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2966882352531186354, guid: 8a5745e70d56c4140aeaa375385e6fb0, type: 3}
+  m_PrefabInstance: {fileID: 254531549}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2066484672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2066484671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
 --- !u!1001 &4516616876381547742
 PrefabInstance:
   m_ObjectHideFlags: 0

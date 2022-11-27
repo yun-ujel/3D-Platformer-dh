@@ -4,11 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Keybinds")]
-    public KeyCode jumpKey = KeyCode.Space;
-    public KeyCode crouchKey = KeyCode.LeftShift;
-    public KeyCode diveKey = KeyCode.E;
-
     [Header("Speed Values")]
 
     [SerializeField] private float walkSpeed;
@@ -18,7 +13,6 @@ public class PlayerController : MonoBehaviour
     private float currentMoveSpeed = 30f;
     [SerializeField] private float jumpForce = 16f;
     [SerializeField] private float slamJumpForce = 16f;
-
     Vector3 moveDir;
 
     [Header("Air Movement")]
@@ -27,26 +21,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 4f;
     [SerializeField, Range(0f, 20f)] private float slamMovementMultiplier = 4f;
     private float defaultGravityScale = 1f;
-    bool isRising;
 
     [SerializeField] private float jumpBufferTime = 0.2f;
-    private float jumpBufferCounter;
-
     public float diveForce = 16f;
 
     [Header("Crouch")]
 
     [SerializeField, Range(0f, 1f)] private float slamBufferTime;
     private float slamBufferCounter;
-
     [SerializeField, Range(0f, 1f)] private float hardLandingTime;
     private float hardLandingCounter;
-
     [SerializeField, Range(0f, 1f)] private float rollHopCooldown;
     public float rollHopForce = 4f;
-
-
-
     bool isSlam;
 
     [Header("References")]
@@ -57,11 +43,11 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     Rigidbody rb;
     gravity grav;
+    PlayerInput PI;
 
     [Header("Read Only")]
 
     public MovementState state;
-
     public float currentVelocity;
     public enum MovementState
     {
@@ -76,12 +62,16 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool onGround;
-
+    [HideInInspector]
     public bool inCrouch;
+    [HideInInspector]
     public bool inRoll;
-
-    float timeSinceLastAction;
-
+    [HideInInspector]
+    public float timeSinceLastAction;
+    [HideInInspector]
+    public float jumpBufferCounter;
+    [HideInInspector]
+    public bool isRising;
 
 
     void Start()
@@ -169,7 +159,7 @@ public class PlayerController : MonoBehaviour
     private void MyInput()
     {
         // JUMPING
-        if (Input.GetKeyDown(jumpKey))
+        if (PI.JumpPressed())
         {
             jumpBufferCounter = jumpBufferTime;
         }
@@ -185,12 +175,12 @@ public class PlayerController : MonoBehaviour
             }
             else if (state != MovementState.slam && hardLandingCounter < 0f)
             {
-                Jump();
+                BroadcastMessage("Jump");
             }
         }
 
         // Variable Jump Height
-        if (isRising && rb.velocity.y > 0f && state == MovementState.none && !onGround && !Input.GetKey(jumpKey))
+        if (isRising && rb.velocity.y > 0f && state == MovementState.none && !onGround && !PI.JumpHeld())
         {
             rb.AddForce(Vector3.down * (rb.velocity.y * 0.8f), ForceMode.Impulse); // Cancel out vertical momentum
             Debug.Log("Jump Cancelled");
@@ -203,7 +193,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // DIVING
-        if (Input.GetKeyDown(diveKey) && !onGround && state == MovementState.none)
+        if (PI.DivePressed() && !onGround && state == MovementState.none)
         {
             Dive();
         }
@@ -214,18 +204,18 @@ public class PlayerController : MonoBehaviour
         if (onGround) 
         { 
             // ENTER CROUCH
-            if (Input.GetKeyDown(crouchKey) && state != MovementState.roll)
+            if (PI.CrouchPressed() && state != MovementState.roll)
             {
                 EnterCrouch();
                 Debug.Log("Enter Crouch");
             }
 
             // ENTER ROLL
-            if (state == MovementState.roll && timeSinceLastAction < -rollHopCooldown && Input.GetKeyDown(diveKey))
+            if (state == MovementState.roll && timeSinceLastAction < -rollHopCooldown && PI.DivePressed())
             {
-                RollHop();
+                BroadcastMessage("RollHop");
             }
-            else if (state == MovementState.crouch && Input.GetKey(diveKey))
+            else if (state == MovementState.crouch && PI.DiveHeld())
             {
                 StartRoll();
             }
@@ -233,7 +223,7 @@ public class PlayerController : MonoBehaviour
         // SLAM
         else if (state != MovementState.dive || state != MovementState.slam)
         {
-            if (Input.GetKeyDown(crouchKey))
+            if (PI.CrouchPressed())
             {
                 rb.constraints = RigidbodyConstraints.FreezeAll;
 
@@ -258,12 +248,12 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if (Input.GetKeyUp(crouchKey))
+            if (PI.CrouchReleased())
             {
                 ExitCrouch();
                 Debug.Log("Exit Crouch");
             }
-            else if (hardLandingCounter < 0f && !Input.GetKey(crouchKey) && (state == MovementState.crouch || state == MovementState.roll))
+            else if (hardLandingCounter < 0f && !PI.CrouchHeld() && (state == MovementState.crouch || state == MovementState.roll))
             {
                 ExitCrouch();
                 Debug.Log("Exit Crouch");
@@ -325,9 +315,6 @@ public class PlayerController : MonoBehaviour
         {
             grav.gravityScale = defaultGravityScale;  // Default Gravity
         }
-
-
-
     }
 
 
@@ -424,7 +411,7 @@ public class PlayerController : MonoBehaviour
         transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
         currentMoveSpeed = rollSpeed * 0.05f;
 
-        RollHop();
+        BroadcastMessage("RollHop");
     }
     void EndRoll()
     {
