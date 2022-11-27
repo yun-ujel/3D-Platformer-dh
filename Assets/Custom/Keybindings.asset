@@ -14,5 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keybindingChecks:
   - Action: 0
-    keyCode: 0
+    keyCode: 32
     mouseButton: 0
+  - Action: 2
+    keyCode: 304
+    mouseButton: 0
+  - Action: 1
+    keyCode: 101
+    mouseButton: 1
+  - Action: 1
+    keyCode: 0
+    mouseButton: 2

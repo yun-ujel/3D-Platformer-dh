@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     private float defaultGravityScale = 1f;
 
     [SerializeField] private float jumpBufferTime = 0.2f;
-    public float diveForce = 16f;
+    [SerializeField] private float diveForce = 16f;
 
     [Header("Crouch")]
 
@@ -32,15 +32,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float hardLandingTime;
     private float hardLandingCounter;
     [SerializeField, Range(0f, 1f)] private float rollHopCooldown;
-    public float rollHopForce = 4f;
+    [SerializeField] private float rollHopForce = 4f;
+    [SerializeField] private float hardRollForce = 36f;
     bool isSlam;
 
     [Header("References")]
 
-    public Transform orient;
-    public cam cam;
-    public physCollision phys;
-    public LayerMask groundLayer;
+    [SerializeField] private Transform orient;
+    [SerializeField] private cam cam;
+    [SerializeField] private LayerMask groundLayer;
     Rigidbody rb;
     gravity grav;
     PlayerInput PI;
@@ -78,6 +78,8 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         grav = GetComponent<gravity>();
+
+        PI = GetComponent<PlayerInput>();
     }
     private void Update()
     {
@@ -100,8 +102,8 @@ public class PlayerController : MonoBehaviour
             if (isSlam)
             {
                 isSlam = false;
-                
-                HardLanding();
+
+                BroadcastMessage("HardLanding");
             }
             else if (!onGround && !isRising)
             {
@@ -171,7 +173,7 @@ public class PlayerController : MonoBehaviour
         {
             if (hardLandingCounter > 0f)
             {
-                slamJump();
+                BroadcastMessage("slamJump");
             }
             else if (state != MovementState.slam && hardLandingCounter < 0f)
             {
@@ -195,7 +197,7 @@ public class PlayerController : MonoBehaviour
         // DIVING
         if (PI.DivePressed() && !onGround && state == MovementState.none)
         {
-            Dive();
+            BroadcastMessage("Dive");
         }
 
 
@@ -206,7 +208,7 @@ public class PlayerController : MonoBehaviour
             // ENTER CROUCH
             if (PI.CrouchPressed() && state != MovementState.roll)
             {
-                EnterCrouch();
+                BroadcastMessage("EnterCrouch");
                 Debug.Log("Enter Crouch");
             }
 
@@ -217,7 +219,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (state == MovementState.crouch && PI.DiveHeld())
             {
-                StartRoll();
+                BroadcastMessage("StartRoll");
             }
         }
         // SLAM
@@ -248,14 +250,19 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if (PI.CrouchReleased())
+            if (PI.CrouchReleased() && hardLandingCounter < 0f)
             {
-                ExitCrouch();
+                BroadcastMessage("ExitCrouch");
                 Debug.Log("Exit Crouch");
             }
-            else if (hardLandingCounter < 0f && !PI.CrouchHeld() && (state == MovementState.crouch || state == MovementState.roll))
+            else if (hardLandingCounter < 0f && !PI.CrouchHeld() && (state == MovementState.crouch))
             {
-                ExitCrouch();
+                BroadcastMessage("ExitCrouch");
+                Debug.Log("Exit Crouch");
+            }
+            else if (hardLandingCounter < -1f && !PI.CrouchHeld() && (state == MovementState.roll))
+            {
+                BroadcastMessage("ExitCrouch");
                 Debug.Log("Exit Crouch");
             }
         }
@@ -264,8 +271,8 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log("Exit Roll");
 
-            EndRoll();
-            EnterCrouch();
+            BroadcastMessage("EndRoll");
+            BroadcastMessage("EnterCrouch");
         }
 
 
@@ -346,7 +353,7 @@ public class PlayerController : MonoBehaviour
         hardLandingCounter = hardLandingTime;
         rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
 
-        EnterCrouch();
+        BroadcastMessage("EnterCrouch");
     }
 
     void Dive()
@@ -367,7 +374,7 @@ public class PlayerController : MonoBehaviour
     }
     void Jump()
     {
-        ExitCrouch();
+        BroadcastMessage("ExitCrouch");
 
         timeSinceLastAction = 0f;
 
@@ -384,7 +391,7 @@ public class PlayerController : MonoBehaviour
     }
     void slamJump()
     {
-        ExitCrouch();
+        BroadcastMessage("ExitCrouch");
 
         timeSinceLastAction = 0f;
 
@@ -406,22 +413,23 @@ public class PlayerController : MonoBehaviour
     {
         state = MovementState.roll;
 
-        phys.meshSphere();
-
         transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
         currentMoveSpeed = rollSpeed * 0.05f;
 
         BroadcastMessage("RollHop");
     }
-    void EndRoll()
-    {
-        phys.meshCapsule();
-    }
     void RollHop()
     {
         timeSinceLastAction = 0f;
 
-        rb.AddForce(cam.PlayerPhysical.forward.normalized * rollHopForce, ForceMode.Impulse);
+        if (hardLandingCounter < 0f)
+        {
+            rb.AddForce(cam.PlayerPhysical.forward.normalized * rollHopForce, ForceMode.Impulse);
+        }
+        else
+        {
+            rb.AddForce(cam.PlayerPhysical.forward.normalized * hardRollForce, ForceMode.Impulse);
+        }
 
         rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
     }
@@ -432,8 +440,6 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(Vector3.down * 10f, ForceMode.Impulse);
         currentMoveSpeed = crouchSpeed;
 
-        phys.ColliderSphere();
-
         state = MovementState.crouch;
     }
     void ExitCrouch()
@@ -441,11 +447,9 @@ public class PlayerController : MonoBehaviour
         transform.localScale = new Vector3(transform.localScale.x, 1f, transform.localScale.z);
         currentMoveSpeed = walkSpeed;
 
-        phys.ColliderCapsule();
-
         if (state == MovementState.roll)
         {
-            EndRoll();
+            BroadcastMessage("EndRoll");
             state = MovementState.none;
         }
         else if (state == MovementState.crouch)

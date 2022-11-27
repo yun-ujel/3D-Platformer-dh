@@ -54,13 +54,13 @@ public class PlayerParticles : MonoBehaviour
 
         main.startSpeed = 20f;
         sh.angle = 90f;
-        main.startLifetime = 0.3f;
+        main.startLifetime = 0.25f;
 
-        ps.Emit(16);
+        ps.Emit(12);
 
         main.startSpeed = 2.25f;
         sh.angle = 80f;
-        main.startLifetime = 0.5f;
+        main.startLifetime = 0.4f;
 
         jumpTrailCounter = 0.3f;
     }
@@ -73,12 +73,49 @@ public class PlayerParticles : MonoBehaviour
 
         main.startSpeed = 12f;
         sh.angle = 90f;
-        main.startLifetime = 0.3f;
+        main.startLifetime = 0.2f;
 
         ps.Emit(8);
 
         main.startSpeed = 2.25f;
         sh.angle = 80f;
-        main.startLifetime = 0.5f;
+        main.startLifetime = 0.4f;
+    }
+
+    void slamJump()
+    {
+        var main = ps.main;
+        var sh = ps.shape;
+
+
+        main.startSpeed = 20f;
+        sh.angle = 90f;
+        main.startLifetime = 0.25f;
+
+        ps.Emit(6);
+
+        main.startSpeed = 2.25f;
+        sh.angle = 80f;
+        main.startLifetime = 0.4f;
+
+        jumpTrailCounter = 0.4f;
+    }
+
+    void HardLanding()
+    {
+        var main = ps.main;
+        var sh = ps.shape;
+
+        sh.position = new Vector3(sh.position.x, sh.position.y, -2f);
+        main.startSpeed = 26f;
+        sh.angle = 90f;
+        main.startLifetime = 0.25f;
+
+        ps.Emit(14);
+
+        main.startSpeed = 2.25f;
+        sh.angle = 80f;
+        main.startLifetime = 0.4f;
+        sh.position = new Vector3(sh.position.x, sh.position.y, -1.6f);
     }
 }
