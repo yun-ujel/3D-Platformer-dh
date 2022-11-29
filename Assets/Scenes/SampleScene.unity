@@ -379,6 +379,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1031378135 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6436086708822595156, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
+  m_PrefabInstance: {fileID: 8105891111408964996}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1031378137 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6436086708822595154, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
+  m_PrefabInstance: {fileID: 8105891111408964996}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031378135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d328601f54ecff4a9ec324eab063e10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1424025889
 GameObject:
   m_ObjectHideFlags: 0
@@ -648,7 +664,8 @@ GameObject:
   - component: {fileID: 1839093000}
   - component: {fileID: 1839092999}
   - component: {fileID: 1839092998}
-  m_Layer: 0
+  - component: {fileID: 1839093002}
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -731,6 +748,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1839093002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839092997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d975e672b441fb4d9db27bde84350bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1031378135}
+  pc: {fileID: 1031378137}
 --- !u!54 &2966882352874963927 stripped
 Rigidbody:
   m_CorrespondingSourceObject: {fileID: 6436086708822595155, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
@@ -801,11 +832,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6436086709023548779, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.0000000037187482
+      value: 0.0000000037187482
       objectReference: {fileID: 0}
     - target: {fileID: 6436086709023548779, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 2.2069037e-10
+      value: -2.2069037e-10
       objectReference: {fileID: 0}
     - target: {fileID: 6436086709023548779, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -825,11 +856,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6436086710585446504, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000003718748
+      value: 0.000000003718748
       objectReference: {fileID: 0}
     - target: {fileID: 6436086710585446504, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 2.2069037e-10
+      value: -2.2069037e-10
       objectReference: {fileID: 0}
     - target: {fileID: 8105891111201115922, guid: adb864fe2c96a334aade2ae3d2f8f3e2, type: 3}
       propertyPath: EmissionModule.rateOverTime.scalar

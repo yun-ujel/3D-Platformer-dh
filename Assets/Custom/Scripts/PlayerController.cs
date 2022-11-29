@@ -30,7 +30,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float slamBufferTime;
     private float slamBufferCounter;
     [SerializeField, Range(0f, 1f)] private float hardLandingTime;
-    private float hardLandingCounter;
+    [HideInInspector]
+    public float hardLandingCounter;
     [SerializeField, Range(0f, 1f)] private float rollHopCooldown;
     [SerializeField] private float rollHopForce = 4f;
     [SerializeField] private float hardRollForce = 36f;
