@@ -98,7 +98,7 @@ public class PlayerController : MonoBehaviour
     private void StateHandler()
     {
         // Ground Check & Landing
-        if (Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), new Vector3(0.3f, 0.7f, 0.3f), Quaternion.identity, groundLayer))
+        if (Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), new Vector3(0.4f, 0.7f, 0.4f), Quaternion.identity, groundLayer))
         {
             if (isSlam)
             {
@@ -251,7 +251,7 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if (PI.CrouchReleased() && hardLandingCounter < 0f)
+            if ((PI.CrouchReleased() && hardLandingCounter < 0f) || !onGround)
             {
                 BroadcastMessage("ExitCrouch");
                 Debug.Log("Exit Crouch");
