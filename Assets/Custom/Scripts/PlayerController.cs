@@ -253,7 +253,7 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if ((PI.CrouchReleased() && hardLandingCounter < 0f) || !onGround)
+            if ((PI.CrouchReleased() && hardLandingCounter < 0f))
             {
                 BroadcastMessage("ExitCrouch");
                 Debug.Log("Exit Crouch");
