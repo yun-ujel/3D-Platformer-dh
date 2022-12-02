@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 10f)] private float downwardMovementMultiplier = 4f;
     [SerializeField, Range(0f, 20f)] private float slamMovementMultiplier = 4f;
     private float defaultGravityScale = 1f;
+    bool diveUsed;
 
     [SerializeField] private float jumpBufferTime = 0.2f;
     [SerializeField] private float diveForce = 16f;
@@ -117,6 +118,7 @@ public class PlayerController : MonoBehaviour
             }
 
             onGround = true;
+            diveUsed = false;
 
         }
         else
@@ -125,7 +127,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Air movement after Dive
-        if(timeSinceLastAction < -0.5f && state == MovementState.dive)
+        if(timeSinceLastAction < -0.8f && state == MovementState.dive)
         {
             Debug.Log("Exit Dive");
 
@@ -196,7 +198,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // DIVING
-        if (PI.DivePressed() && !onGround && state == MovementState.none)
+        if (PI.DivePressed() && !onGround && state == MovementState.none && !diveUsed)
         {
             BroadcastMessage("Dive");
         }
@@ -372,6 +374,8 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(cam.PlayerPhysical.forward.normalized * diveForce, ForceMode.Impulse);
         }
+
+        diveUsed = true;
     }
     void Jump()
     {
