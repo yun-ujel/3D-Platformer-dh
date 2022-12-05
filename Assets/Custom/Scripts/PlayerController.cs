@@ -133,6 +133,10 @@ public class PlayerController : MonoBehaviour
 
             state = MovementState.none;
         }
+        else if(timeSinceLastAction < -1f && rb.velocity.y >= 0f && state == MovementState.slam)
+        {
+            state = MovementState.none;
+        }
 
         // Hard Landing
         hardLandingCounter -= Time.deltaTime;
@@ -225,16 +229,16 @@ public class PlayerController : MonoBehaviour
             }
         }
         // SLAM
-        else if (!(state == MovementState.dive || state == MovementState.slam))
+        else if (!(state == MovementState.slam))
         {
             if (PI.CrouchPressed() && state != MovementState.slamBuffer)
             {
-                rb.constraints = RigidbodyConstraints.FreezeAll;
+                BroadcastMessage("EndRoll");
+                BroadcastMessage("ExitCrouch");
 
+                rb.constraints = RigidbodyConstraints.FreezeAll;
                 state = MovementState.slamBuffer;
                 isSlam = true;
-
-
 
                 //Invoke(nameof(Slam), slamBufferTime);
                 slamBufferCounter = slamBufferTime;

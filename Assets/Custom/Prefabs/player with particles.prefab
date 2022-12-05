@@ -65,7 +65,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d328601f54ecff4a9ec324eab063e10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 24
+  walkSpeed: 28
   crouchSpeed: 10
   rollSpeed: 14
   jumpForce: 16
@@ -148,8 +148,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6436086709023548782}
-  m_LocalRotation: {x: 0.018271076, y: -0.000000002150439, z: 3.929739e-11, w: 0.9998331}
-  m_LocalPosition: {x: 0, y: 41, z: 128}
+  m_LocalRotation: {x: 0.018271074, y: 0.0000000010752196, z: -1.9648694e-11, w: 0.9998331}
+  m_LocalPosition: {x: 0, y: 1, z: -12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4580061125550890786}
@@ -734,8 +734,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c895be57400f6a479997795d9561a00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  capsule: {fileID: 6436086709467751361}
-  sphere: {fileID: 6436086709467751421}
   mf: {fileID: 6436086709467751423}
   sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   capsuleMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
@@ -793,7 +791,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6436086710102822253}
-  m_LocalRotation: {x: -0.0049256654, y: -0.000000017187109, z: -8.465898e-11, w: 0.9999879}
+  m_LocalRotation: {x: -0.004925663, y: -0.000000017199834, z: -8.472162e-11, w: 0.9999879}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1148,7 +1146,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6436086710585446506}
-  m_LocalRotation: {x: 0.018271074, y: -0.0000000010752194, z: 1.964869e-11, w: 0.9998331}
+  m_LocalRotation: {x: 0.018271074, y: 0.0000000010752194, z: -1.964869e-11, w: 0.9998331}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -6181,9 +6179,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ebbc692890dc4645b80eda0c51212b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ps: {fileID: 8105891111201115922}
-  pause: 0
-  pc: {fileID: 6436086708822595154}
 --- !u!1 &8534615093358928370
 GameObject:
   m_ObjectHideFlags: 0
