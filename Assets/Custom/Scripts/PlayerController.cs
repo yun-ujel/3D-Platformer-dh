@@ -72,7 +72,7 @@ public class PlayerController : MonoBehaviour
     public float timeSinceLastAction;
     [HideInInspector]
     public float jumpBufferCounter;
-    [HideInInspector]
+    //[HideInInspector]
     public bool isRising;
 
 
@@ -99,7 +99,7 @@ public class PlayerController : MonoBehaviour
     private void StateHandler()
     {
         // Ground Check & Landing
-        if (Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), new Vector3(0.4f, 0.7f, 0.4f), Quaternion.identity, groundLayer))
+        if (Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.5f, transform.position.z), new Vector3(0.2f, 0.7f, 0.2f), Quaternion.identity, groundLayer))
         {
             if (isSlam)
             {
@@ -212,7 +212,6 @@ public class PlayerController : MonoBehaviour
             if (PI.CrouchPressed() && state != MovementState.roll)
             {
                 BroadcastMessage("EnterCrouch");
-                Debug.Log("Enter Crouch");
             }
 
             // ENTER ROLL
@@ -226,9 +225,9 @@ public class PlayerController : MonoBehaviour
             }
         }
         // SLAM
-        else if (state != MovementState.dive || state != MovementState.slam)
+        else if (!(state == MovementState.dive || state == MovementState.slam))
         {
-            if (PI.CrouchPressed())
+            if (PI.CrouchPressed() && state != MovementState.slamBuffer)
             {
                 rb.constraints = RigidbodyConstraints.FreezeAll;
 
@@ -253,20 +252,17 @@ public class PlayerController : MonoBehaviour
         // EXIT CROUCH
         if (state == MovementState.roll || state == MovementState.crouch)
         {
-            if ((PI.CrouchReleased() && hardLandingCounter < 0f))
+            if (PI.CrouchReleased() && hardLandingCounter < 0f)
             {
                 BroadcastMessage("ExitCrouch");
-                Debug.Log("Exit Crouch");
             }
             else if (hardLandingCounter < 0f && !PI.CrouchHeld() && (state == MovementState.crouch))
             {
                 BroadcastMessage("ExitCrouch");
-                Debug.Log("Exit Crouch");
             }
             else if (hardLandingCounter < -1f && !PI.CrouchHeld() && (state == MovementState.roll))
             {
                 BroadcastMessage("ExitCrouch");
-                Debug.Log("Exit Crouch");
             }
         }
         // EXIT ROLL
@@ -446,6 +442,8 @@ public class PlayerController : MonoBehaviour
         currentMoveSpeed = crouchSpeed;
 
         state = MovementState.crouch;
+
+        Debug.Log("Enter Crouch");
     }
     void ExitCrouch()
     {
@@ -460,6 +458,18 @@ public class PlayerController : MonoBehaviour
         else if (state == MovementState.crouch)
         {
             state = MovementState.none;
+        }
+
+        Debug.Log("Exit Crouch");
+    }
+
+    void Bounce()
+    {
+        if (isSlam)
+        {
+            isSlam = false;
+
+            BroadcastMessage("HardLanding");
         }
     }
 }

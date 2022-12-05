@@ -14,11 +14,11 @@ public class bouncingPad : MonoBehaviour
 
     private void OnCollisionEnter(Collision cl)
     {
-        if (cl.gameObject == player)
+        if (cl.gameObject == player && Physics.CheckBox(new Vector3(transform.position.x, transform.position.y + (transform.localScale.y * 6f), transform.position.z), new Vector3(transform.localScale.x * 15f, transform.localScale.y * 5f, transform.localScale.z * 16f)))
         {
-            rb.AddForce(Vector3.up * 110f, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * 95f, ForceMode.Impulse);
 
-            Debug.Log("bounce");
+            player.BroadcastMessage("Bounce");
         }
     }
 }

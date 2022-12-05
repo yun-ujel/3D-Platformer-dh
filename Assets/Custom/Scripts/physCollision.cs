@@ -4,12 +4,20 @@ using UnityEngine;
 
 public class physCollision : MonoBehaviour
 {
-    public CapsuleCollider capsule;
-    public SphereCollider sphere;
+    private CapsuleCollider capsule;
+    private SphereCollider sphere;
     public MeshFilter mf;
 
     [SerializeField] Mesh sphereMesh;
     [SerializeField] Mesh capsuleMesh;
+
+    private void Start()
+    {
+        capsule = GetComponentInChildren<CapsuleCollider>();
+        sphere = GetComponentInChildren<SphereCollider>();
+    }
+
+
 
     public void EnterCrouch()
     {

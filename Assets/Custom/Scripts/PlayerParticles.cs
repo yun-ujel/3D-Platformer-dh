@@ -4,11 +4,23 @@ using UnityEngine;
 
 public class PlayerParticles : MonoBehaviour
 {
-    public ParticleSystem ps;
-    public bool pause;
-    public PlayerController pc;
+    private ParticleSystem ps;
+    //public GameObject player;
 
-    bool isJumping;
+    private PlayerController pc;
+    private Rigidbody rb;
+
+
+    private void Start()
+    {
+        //if (player = null)
+        //{
+        //    player = GameObject.Find("player");
+        //}
+        pc = GetComponentInParent<PlayerController>();
+        rb = GetComponentInParent<Rigidbody>();
+        ps = GetComponent<ParticleSystem>();
+    }
 
     private void Update()
     {
@@ -24,7 +36,7 @@ public class PlayerParticles : MonoBehaviour
         {
             em.rateOverTime = Random.Range(Mathf.CeilToInt(pc.currentVelocity * 0.75f), Mathf.CeilToInt(pc.currentVelocity * 1f));
         }
-        else if (pc.currentVelocity > 5f && pc.isRising && jumpTrailCounter > 0f)
+        else if (pc.currentVelocity > 5f && rb.velocity.y > 0f && jumpTrailCounter > 0f)
         {
             em.rateOverTime = Mathf.CeilToInt(pc.currentVelocity);
         }
@@ -117,5 +129,24 @@ public class PlayerParticles : MonoBehaviour
         sh.angle = 80f;
         main.startLifetime = 0.4f;
         sh.position = new Vector3(sh.position.x, sh.position.y, -1.6f);
+    }
+
+    void Bounce()
+    {
+        var main = ps.main;
+        var sh = ps.shape;
+
+
+        main.startSpeed = 20f;
+        sh.angle = 90f;
+        main.startLifetime = 0.25f;
+
+        ps.Emit(6);
+
+        main.startSpeed = 2.25f;
+        sh.angle = 80f;
+        main.startLifetime = 0.4f;
+
+        jumpTrailCounter = 0.8f;
     }
 }
