@@ -36,6 +36,10 @@ public class PlayerParticles : MonoBehaviour
         {
             em.rateOverTime = Random.Range(Mathf.CeilToInt(pc.currentVelocity * 0.75f), Mathf.CeilToInt(pc.currentVelocity * 1f));
         }
+        else if (pc.currentVelocity > 5f && pc.state == PlayerController.MovementState.dive && jumpTrailCounter > 0f)
+        {
+            em.rateOverTime = Mathf.CeilToInt(pc.currentVelocity);
+        }
         else if (pc.currentVelocity > 5f && rb.velocity.y > 0f && jumpTrailCounter > 0f)
         {
             em.rateOverTime = Mathf.CeilToInt(pc.currentVelocity);
@@ -148,5 +152,29 @@ public class PlayerParticles : MonoBehaviour
         main.startLifetime = 0.4f;
 
         jumpTrailCounter = 0.8f;
+    }
+
+    void Dive()
+    {
+        var main = ps.main;
+        var sh = ps.shape;
+
+        sh.rotation = new Vector3(-90f, 0f, 0f);
+        sh.position = new Vector3(sh.position.x, sh.position.y, -0.8f);
+
+        main.startSpeed = 20f;
+        main.startLifetime = 0.25f;
+        sh.angle = 40f;
+
+        ps.Emit(6);
+
+        main.startSpeed = 2.25f;
+        main.startLifetime = 0.4f;
+        sh.angle = 80f;
+
+        sh.rotation = new Vector3(0f, 0f, 0f);
+        sh.position = new Vector3(sh.position.x, sh.position.y, -1.6f);
+
+        jumpTrailCounter = 0.3f;
     }
 }
