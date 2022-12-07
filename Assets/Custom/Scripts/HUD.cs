@@ -28,6 +28,8 @@ public class HUD : MonoBehaviour
         {
             collectibleMax += 1f;
         }
+
+        scoreText.color = new Color(scoreText.color.r, scoreText.color.g, scoreText.color.b, 0f);
     }
 
     void Update()

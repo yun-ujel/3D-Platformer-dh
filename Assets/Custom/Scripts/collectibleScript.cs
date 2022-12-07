@@ -66,4 +66,6 @@ public class collectibleScript : MonoBehaviour
             transform.Rotate(Vector3.up, 50f * Time.deltaTime);
         }
     }
+
+    
 }
