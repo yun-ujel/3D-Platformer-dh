@@ -45,7 +45,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     Rigidbody rb;
     gravity grav;
-    PlayerInput PI;
+    [HideInInspector]
+    public PlayerInput PI;
 
     [Header("Read Only")]
 
@@ -133,7 +134,7 @@ public class PlayerController : MonoBehaviour
 
             state = MovementState.none;
         }
-        else if(timeSinceLastAction < -1f && rb.velocity.y >= 0f && state == MovementState.slam)
+        else if(timeSinceLastAction < -1f && rb.velocity.y <= 1f && state == MovementState.slam)
         {
             state = MovementState.none;
         }
